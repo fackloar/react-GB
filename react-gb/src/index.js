@@ -5,5 +5,9 @@ import App from './App';
 
 const message = "Hello from a const in index.js!";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App message = {message} />);
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+    <React.StrictMode>
+      <App />
+      </React.StrictMode>
+);

@@ -1,0 +1,15 @@
+.message {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: calc(20px + 2vmin);
+    color: goldenrod;
+}
+
+.author {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: calc(26px + 2vmin);
+    color: gold;
+}
