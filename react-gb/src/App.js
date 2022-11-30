@@ -40,7 +40,6 @@ function App() {
           <Route path={"/counter"} element={<Counter />} />
         </Route>
         <Route path={"/chat"} element={<Chat />} />
-        <Route path={"/chat/:chatId"} element={<Chat />} />
         <Route path={"*"} element={<NotFound />} />
       </Routes>
     </ThemeProvider>
