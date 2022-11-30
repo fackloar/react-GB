@@ -1,17 +1,58 @@
-import './App.css';
-import logo from './logo512.png';
-import { useState, useEffect, useCallback } from "react";
-import MessageList from "./components/MessageList/MessageList.jsx";
+import { useState, useEffect, useCallback, useRef } from "react";
+import MessageList from "./components/messageList/MessageList";
+import "./App.css";
+import MessageForm from "./components/messageForm/MessageForm";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import ChatsList from "./components/chatsList/ChatsList";
+import { TextField } from "@mui/material";
 
-const emptyMessage = { author: "", body: "" };
 const botMessage = { author: "Bot", body: "" };
+const theme = createTheme({
+  spacing: [0, 4, 8, 16],
+  components: {
+    MuiButton: {
+      defaultProps: {
+        size: "big",
+        variant: "contained",
+        margin: "dense",
+      },
+    },
+    MuiTextField: {
+      defaultProps: {
+        variant: "filled",
+        size: "small",
+      },
+    },
+    MuiStack: {
+      defaultProps: {
+        spacing: 1,
+      },
+    },
+  },
+});
 
 function App() {
-
-  const [currentUser, setCurrentUser] = useState("Username");
+  const [currentUser, setCurrentUser] = useState("John");
   const [messageList, setMessageList] = useState([]);
+  const [chatsList, setChatsList] = useState([
+    {
+      id: 1,
+      header: "some header",
+      messages: [],
+    },
+    {
+      id: 2,
+      header: "some header2",
+      messages: [],
+    },
+    {
+      id: 3,
+      header: "some header3",
+      messages: [],
+    },
+  ]);
   const [idCounter, setIdCounter] = useState(0);
-  const [formMessage, setFormMessage] = useState({ ...emptyMessage });
+  const formRef = useRef(null);
 
   const getNewId = useCallback(() => {
     const newId = idCounter + 1;
@@ -26,37 +67,42 @@ function App() {
     [getNewId, messageList]
   );
 
+  const botSendMessage = useCallback(
+    (messages) => {
+      if (messages.length === 0) return;
+      const lastMessage = messages.at(-1);
+      if (lastMessage.author === botMessage.author) return;
+      addMessage({ ...botMessage, body: `${lastMessage.author} write in chat` });
+      formRef.current.focus();
+    },
+    [addMessage]
+  );
+
   useEffect(() => {
-    if (messageList.length === 0) return;
-    const lastMessage = messageList.at(-1);
-    if (lastMessage.author === botMessage.author) return;
-    setTimeout(() => addMessage({ ...botMessage, body: `${lastMessage.author} said something` }), 1500);
-  }, [messageList, addMessage]);
+    setTimeout(() => botSendMessage(messageList), 1500);
+  }, [messageList, botSendMessage]);
 
-  const addMessageFromForm = (e) => {
-    e.preventDefault();
-    addMessage(formMessage);
-    setFormMessage({ ...emptyMessage });
-  };
+  return (
+    <ThemeProvider theme={theme}>
+      <div className="App">
 
-return (
-  <div className="App">
+        <div className="chat">
+          <div className="side">
+            <div className="chat-user">
+              <TextField type="text" label="Current User" value={currentUser} onChange={(e) => setCurrentUser(e.target.value)} />
+            </div>
 
-      <div className="chat">
-        <div className="chat-user">
-          <label>Current User: </label>
-          <input type="text" value={currentUser} onChange={(e) => setCurrentUser(e.target.value)} />
+            <ChatsList chats={chatsList} />
+          </div>
+
+          <div className="chat-group">
+            <MessageList messages={messageList} currentUser={currentUser} />
+
+            <MessageForm onMessageSend={addMessage} ref={formRef} />
+          </div>
         </div>
-
-        <MessageList messages={messageList} currentUser={currentUser} />
-
-        <form className="form-message">
-          <input type="text" placeholder="user" value={formMessage.author} onChange={(e) => setFormMessage({ ...formMessage, author: e.target.value })} />
-          <input type="text" placeholder="message" value={formMessage.body} onChange={(e) => setFormMessage({ ...formMessage, body: e.target.value })} />
-          <button onClick={addMessageFromForm}>send</button>
-        </form>
       </div>
-    </div>
+    </ThemeProvider>
   );
 }
 
