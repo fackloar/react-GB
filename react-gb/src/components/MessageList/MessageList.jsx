@@ -1,5 +1,5 @@
 import React from 'react'
-import Message from '../Message/Message.jsx'
+import Message from '../message/Message.jsx'
 
 function MessagesList({ messages, currentUser }) {
   return (
