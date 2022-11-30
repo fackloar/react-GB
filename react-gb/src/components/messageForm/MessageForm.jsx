@@ -1,12 +1,15 @@
 import { useState, forwardRef } from 'react'
 import { Stack, TextField, Button } from '@mui/material'
+import { useDispatch } from 'react-redux'
+import { addMessage } from '../../store/chatSlice'
 
-const MessageForm = forwardRef(({ onMessageSend }, ref) => {
+const MessageForm = forwardRef((props, ref) => {
   const [formMessage, setFormMessage] = useState({ author: '', body: '' })
+  const dispatch = useDispatch()
 
   const sendMessage = (e) => {
     e.preventDefault()
-    onMessageSend(formMessage)
+    dispatch(addMessage(formMessage))
     setFormMessage({ ...formMessage, body: '' })
   }
 

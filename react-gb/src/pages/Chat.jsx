@@ -4,67 +4,33 @@ import MessageForm from '../components/messageForm/MessageForm'
 import ChatsList from '../components/chatsList/ChatsList'
 import { TextField } from '@mui/material'
 import CustomLink from '../components/customLink/CustomLink'
-import { useParams } from 'react-router-dom'
 
-const botMessage = { author: 'Bot', body: '' }
+import { useSelector, useDispatch } from 'react-redux'
+import { selectMessages, addMessage } from '../store/chatSlice'
+import { selectUserName, signIn } from '../store/authSlice'
 
 const Chat = () => {
-  const getNewId = useCallback(() => {
-    return Date.now()
-  }, [])
-  const { chatId } = useParams()
-  const [chatsList, setChatsList] = useState([
-    {
-      id: getNewId(),
-      header: 'some header',
-      messages: [],
-    },
-  ])
-
-  const [currentUser, setCurrentUser] = useState('John')
-  const getCurrentChat = () => {
-    let id = parseInt(chatId)
-    if (Number.isNaN(id)) {
-      return []
-    }
-    let chat = chatsList.find((item) => item.id === id)
-    return chat.messages
-  }
-  const [messageList, setMessageList] = useState(getCurrentChat())
+  const userName = useSelector(selectUserName)
+  const messages = useSelector(selectMessages)
+  const dispatch = useDispatch()
 
   const formRef = useRef(null)
 
-  const addMessage = useCallback(
-    (newMessage) => {
-      setMessageList([...messageList, { ...newMessage, id: getNewId() }])
-    },
-    [getNewId, messageList],
-  )
-
-  const botSendMessage = useCallback(
-    (messages) => {
-      if (messages.length === 0) return
-      const lastMessage = messages.at(-1)
-      if (lastMessage.author === botMessage.author) return
-      addMessage({ ...botMessage, body: `${lastMessage.author} write in chat` })
-      formRef.current.focus()
-    },
-    [addMessage],
-  )
-
-  const removeChat = (id) => {
-    setChatsList(chatsList.filter((c) => c.id !== id))
-  }
-
-  const addChat = (chatName) => {
-    let id = getNewId()
-    setChatsList([...chatsList, { id: id, header: chatName, messages: [] }])
-    return id
-  }
+  const botSendMessage = useCallback((messages) => {
+    if (messages.length === 0) return
+    const lastMessage = messages.at(-1)
+    if (lastMessage.author === 'Bot') return
+    let message = {
+      author: 'Bot',
+      body: `${lastMessage.author} write in chat`,
+    }
+    dispatch(addMessage(message))
+    formRef.current.focus()
+  }, [])
 
   useEffect(() => {
-    setTimeout(() => botSendMessage(messageList), 1500)
-  }, [messageList, botSendMessage])
+    setTimeout(() => botSendMessage(messages), 1500)
+  }, [messages, botSendMessage])
 
   return (
     <div className="chat">
@@ -76,23 +42,18 @@ const Chat = () => {
           <TextField
             type="text"
             label="Current User"
-            value={currentUser}
-            onChange={(e) => setCurrentUser(e.target.value)}
+            value={userName}
+            onChange={(e) => dispatch(signIn(e.target.value))}
           />
         </div>
 
-        <ChatsList
-          chats={chatsList}
-          chatId={chatId}
-          onRemoveChat={removeChat}
-          onAddChat={addChat}
-        />
+        <ChatsList />
       </div>
 
       <div className="chat-group">
-        <MessageList messages={messageList} currentUser={currentUser} />
+        <MessageList />
 
-        <MessageForm onMessageSend={addMessage} ref={formRef} />
+        <MessageForm ref={formRef} />
       </div>
     </div>
   )
